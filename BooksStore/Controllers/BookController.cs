@@ -1,17 +1,21 @@
 ﻿using BooksStore.Models;
 using BooksStore.Models.Repositories;
+using BooksStore.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace BooksStore.Controllers
 {
     public class BookController : Controller
     {
         private readonly IBookRepository<Book> bookRepository;
+        private readonly IBookRepository<Author> authorRepository;
 
-        public BookController(IBookRepository<Book> bookRepository)
+        public BookController(IBookRepository<Book> bookRepository, IBookRepository<Author> authorRepository)
         {
             this.bookRepository = bookRepository;
+            this.authorRepository = authorRepository;
         }
         // GET: BookController
         public ActionResult Index()
@@ -30,16 +34,31 @@ namespace BooksStore.Controllers
         // GET: BookController/Create
         public ActionResult Create()
         {
-            return View();
+
+            var model = new BookAuthorViewModel
+            {
+                Authors = authorRepository.List().ToList(),
+            };
+            return View(model);
         }
 
         // POST: BookController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public ActionResult Create(BookAuthorViewModel model)
         {
+
+
             try
             {
+                var book = new Book
+                {
+                    Id = model.BookId,
+                    Description = model.Description,
+                    Author = authorRepository.Find(model.AuthorId),
+                    Title = model.Title,
+                };
+                bookRepository.Add(book);
                 return RedirectToAction(nameof(Index));
             }
             catch
@@ -51,16 +70,34 @@ namespace BooksStore.Controllers
         // GET: BookController/Edit/5
         public ActionResult Edit(int id)
         {
-            return View();
+            Book book = bookRepository.Find(id);
+            book.Author.Id = book.Author.Id == null ? 1 : book.Author.Id;
+            var viewModel = new BookAuthorViewModel
+            {
+                BookId = book.Id,
+                Description = book.Description,
+                Title = book.Title,
+                AuthorId = book.Author.Id,
+                Authors = authorRepository.List().ToList(),
+            };
+            return View(viewModel);
         }
 
         // POST: BookController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public ActionResult Edit(int id, BookAuthorViewModel viewModel)
         {
+
             try
             {
+                var book = new Book
+                {
+                    Description = viewModel.Description,
+                    Author = authorRepository.Find(viewModel.AuthorId),
+                    Title = viewModel.Title,
+                };
+                bookRepository.Update(viewModel.BookId, book);
                 return RedirectToAction(nameof(Index));
             }
             catch
