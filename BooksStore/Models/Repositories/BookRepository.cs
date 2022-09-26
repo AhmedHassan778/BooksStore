@@ -15,12 +15,14 @@ namespace BooksStore.Models.Repositories
                 Title="Python book",
                 Description="Python book",
                 Author=new Author{ Id=2,},
+                ImageUrl="python.png",
                 },
            new Book{
                 Id=2,
                 Title="C++ book",
                 Description="C++ book",
                 Author=new Author(),
+                ImageUrl="c++.png",
 
                 },
            new Book{
@@ -33,6 +35,8 @@ namespace BooksStore.Models.Repositories
         }
         public void Add(Book item)
         {
+
+            item.Id = books.Max(b => b.Id) + 1;
             books.Add(item);
         }
 
@@ -52,12 +56,18 @@ namespace BooksStore.Models.Repositories
             return books;
         }
 
+        public IList<Book> Search(string term)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public void Update(int id, Book item)
         {
             var book = Find(id);
             book.Title = item.Title;
             book.Description = item.Description;
             book.Author = item.Author;
+            book.ImageUrl = item.ImageUrl;
 
         }
     }

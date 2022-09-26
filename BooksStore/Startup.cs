@@ -3,6 +3,8 @@ using BooksStore.Models.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -13,13 +15,25 @@ namespace BooksStore
 {
     public class Startup
     {
+        private readonly IConfiguration configuration;
+
+        public Startup(IConfiguration configuration)
+        {
+            this.configuration = configuration;
+        }
+
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
-            services.AddSingleton<IBookRepository<Author>, AuthorRepository>();
-            services.AddSingleton<IBookRepository<Book>, BookRepository>();
+            services.AddScoped<IBookRepository<Author>, AuthorDbRepository>();
+            services.AddScoped<IBookRepository<Book>, BookDbRepository>();
+            services.AddDbContext<BookStoreDbContext>(options =>
+            {
+                options.UseSqlServer(configuration.GetConnectionString("SqlCon"));
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -30,7 +44,10 @@ namespace BooksStore
                 app.UseDeveloperExceptionPage();
             }
             app.UseStaticFiles();
-            app.UseMvcWithDefaultRoute();
+            app.UseMvc(route =>
+            {
+                route.MapRoute("default", "{Controller=Book}/{action=Index}/{id?}");
+            });
         }
     }
 }

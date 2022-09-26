@@ -22,6 +22,7 @@ namespace BooksStore.Models.Repositories
         }
         public void Add(Author item)
         {
+            item.Id = authors.Max(b => b.Id) + 1;
             authors.Add(item);
         }
 
@@ -38,6 +39,11 @@ namespace BooksStore.Models.Repositories
         public IList<Author> List()
         {
             return authors;
+        }
+
+        public IList<Author> Search(string term)
+        {
+            throw new System.NotImplementedException();
         }
 
         public void Update(int id, Author item)

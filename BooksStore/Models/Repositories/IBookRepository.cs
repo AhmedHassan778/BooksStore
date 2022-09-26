@@ -9,5 +9,6 @@ namespace BooksStore.Models.Repositories
         void Add(T item);
         void Update(int id, T item);
         void Delete(int id);
+        IList<T> Search(string term);
     }
 }
